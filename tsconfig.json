@@ -1,0 +1,35 @@
+{
+  "compilerOptions": {
+    /* Environment */
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "types": ["three", "node", "vite/client"],
+
+    /* Pragmatic strictness:
+       strict ON for real safety (this/types/returns), but noImplicitAny and
+       strictNullChecks OFF so the existing physics/raycast/three code compiles
+       clean without rewriting working logic or sprinkling `!` everywhere.
+       Tighten these later module-by-module if desired. */
+    "strict": true,
+    "noImplicitAny": false,
+    "strictNullChecks": false,
+
+    /* Vite transpiles per-file, so enforce isolated-modules rules and never emit. */
+    "isolatedModules": true,
+    "verbatimModuleSyntax": false,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "useDefineForClassFields": false,
+
+    /* Keep the migration low-noise: don't fail on unused symbols. */
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
+  },
+  "include": ["src", "vite.config.ts"]
+}

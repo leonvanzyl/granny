@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GRANNY — Debug Lab</title>
+<style>
+  :root {
+    --bg: #0d0f14;
+    --panel: #14171f;
+    --panel-2: #1a1e28;
+    --edge: #2a2f3a;
+    --ink: #cdd3df;
+    --ink-dim: #7c8597;
+    --accent: #4cc9f0;
+    --accent-2: #ff9f1c;
+    --on: #39d353;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg); }
+  body {
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
+    color: var(--ink); font-size: 12px; -webkit-font-smoothing: antialiased;
+  }
+  #lab { position: fixed; inset: 0; display: grid;
+    grid-template-columns: 280px 1fr;
+    grid-template-rows: 40px 1fr 38px;
+    grid-template-areas: "tabs tabs" "panel stage" "panel shellbar"; }
+
+  /* tabs */
+  #tabs { grid-area: tabs; display: flex; align-items: stretch; gap: 2px;
+    background: var(--panel); border-bottom: 1px solid var(--edge); padding: 0 8px; }
+  #tabs .brand { display: flex; align-items: center; font-weight: 700; letter-spacing: 2px;
+    color: var(--accent); padding: 0 16px 0 6px; font-size: 13px; }
+  .lab-tab { background: transparent; border: 0; color: var(--ink-dim); font: inherit;
+    padding: 0 16px; cursor: pointer; border-bottom: 2px solid transparent; }
+  .lab-tab:hover { color: var(--ink); }
+  .lab-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  #blurb { margin-left: auto; display: flex; align-items: center; color: var(--ink-dim);
+    font-size: 11px; font-style: italic; padding-right: 10px; }
+
+  /* panel */
+  #panel { grid-area: panel; background: var(--panel); border-right: 1px solid var(--edge);
+    overflow-y: auto; padding: 10px; }
+  .lab-section { margin-bottom: 12px; border: 1px solid var(--edge); border-radius: 5px; overflow: hidden; }
+  .lab-section-title { background: var(--panel-2); padding: 6px 9px; font-weight: 700;
+    letter-spacing: 1px; color: var(--accent-2); font-size: 11px; text-transform: uppercase; }
+  .lab-section-body { padding: 8px 9px; display: flex; flex-direction: column; gap: 8px; }
+  .lab-heading { color: var(--ink-dim); text-transform: uppercase; letter-spacing: 1px;
+    font-size: 10px; margin-top: 4px; }
+  .lab-info { color: var(--ink-dim); font-size: 11px; line-height: 1.5; }
+  .lab-info b, .lab-info strong { color: var(--ink); }
+  .lab-row { display: flex; flex-direction: column; gap: 4px; }
+  .lab-row-toggle, .lab-row > label.lab-label + select { }
+  .lab-label { color: var(--ink-dim); font-size: 11px; }
+  .lab-select { width: 100%; background: var(--panel-2); color: var(--ink); border: 1px solid var(--edge);
+    border-radius: 4px; padding: 5px 6px; font: inherit; }
+  .lab-slider-head { display: flex; justify-content: space-between; align-items: baseline; }
+  .lab-val { color: var(--accent); font-size: 11px; }
+  .lab-range { width: 100%; accent-color: var(--accent); }
+  .lab-row-toggle { flex-direction: row; align-items: center; justify-content: space-between; }
+  .lab-toggle { background: var(--panel-2); color: var(--ink-dim); border: 1px solid var(--edge);
+    border-radius: 4px; padding: 3px 12px; font: inherit; cursor: pointer; min-width: 52px; }
+  .lab-toggle.on { background: rgba(57,211,83,0.18); color: var(--on); border-color: var(--on); }
+  .lab-button { background: var(--panel-2); color: var(--ink); border: 1px solid var(--edge);
+    border-radius: 4px; padding: 6px 10px; font: inherit; cursor: pointer; }
+  .lab-button:hover { border-color: var(--accent); color: #fff; }
+  .lab-button.active { background: rgba(76,201,240,0.18); border-color: var(--accent); color: var(--accent); }
+  .lab-button:disabled { opacity: 0.4; cursor: default; }
+  .lab-button-sm { padding: 4px 8px; font-size: 11px; }
+  .lab-btnrow { display: flex; flex-wrap: wrap; gap: 4px; }
+
+  /* stage */
+  #stage { grid-area: stage; position: relative; overflow: hidden; }
+  #labcanvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  #readout { position: absolute; top: 10px; right: 12px; white-space: pre; text-align: right;
+    color: var(--ink); background: rgba(8,10,14,0.55); padding: 8px 10px; border-radius: 5px;
+    border: 1px solid var(--edge); font-size: 11px; line-height: 1.5; pointer-events: none;
+    max-width: 320px; }
+  #fps { position: absolute; bottom: 8px; right: 12px; color: var(--ink-dim); font-size: 11px; pointer-events: none; }
+  #legend { position: absolute; bottom: 8px; left: 12px; color: var(--ink-dim); font-size: 10px;
+    line-height: 1.6; pointer-events: none; background: rgba(8,10,14,0.4); padding: 5px 8px; border-radius: 4px; }
+  #legend b { color: var(--ink); }
+  #lab-toast { position: absolute; top: 10px; left: 50%; transform: translateX(-50%) translateY(-8px);
+    background: rgba(8,10,14,0.9); border: 1px solid var(--accent); color: var(--ink); padding: 6px 14px;
+    border-radius: 5px; font-size: 12px; opacity: 0; transition: opacity 0.2s, transform 0.2s; pointer-events: none; }
+  #lab-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* shell bar */
+  #shellbar { grid-area: shellbar; display: flex; align-items: center; gap: 4px; flex-wrap: wrap;
+    background: var(--panel); border-top: 1px solid var(--edge); border-left: 1px solid var(--edge);
+    padding: 0 10px; overflow-x: auto; }
+  .lab-shell-label { color: var(--ink-dim); font-size: 10px; letter-spacing: 1px; margin: 0 2px 0 6px; }
+  .lab-sep { width: 1px; height: 18px; background: var(--edge); margin: 0 4px; }
+
+  ::-webkit-scrollbar { width: 9px; height: 9px; }
+  ::-webkit-scrollbar-thumb { background: #2a2f3a; border-radius: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+</style>
+</head>
+<body>
+  <div id="lab">
+    <div id="tabs"><span class="brand">GRANNY · LAB</span><span id="blurb"></span></div>
+    <div id="panel"></div>
+    <div id="stage">
+      <canvas id="labcanvas"></canvas>
+      <div id="readout"></div>
+      <div id="fps"></div>
+      <div id="legend">
+        <b>Drag</b> orbit · <b>Shift/Right-drag</b> pan · <b>Wheel</b> zoom<br>
+        Axes: <b style="color:#ff6b6b">X</b> <b style="color:#51cf66">Y</b> <b style="color:#4cc9f0">Z</b> &nbsp; (model front faces +Z)
+      </div>
+    </div>
+    <div id="shellbar"></div>
+  </div>
+  <script type="module" src="./src/lab/main.ts"></script>
+</body>
+</html>

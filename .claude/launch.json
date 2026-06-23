@@ -3,8 +3,8 @@
   "configurations": [
     {
       "name": "granny",
-      "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "http.server", "8099"],
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["node_modules/vite/bin/vite.js", "--port", "8099", "--strictPort", "--host"],
       "port": 8099
     }
   ]

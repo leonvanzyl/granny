@@ -144,16 +144,10 @@
                  display: flex; align-items: center; justify-content: center; touch-action: none; }
 </style>
 
-<!-- Vendored ESM libraries (served from local node_modules — no CDN, works offline) -->
-<script type="importmap">
-{
-  "imports": {
-    "three": "./node_modules/three/build/three.module.js",
-    "three/addons/": "./node_modules/three/examples/jsm/",
-    "cannon-es": "./node_modules/cannon-es/dist/cannon-es.js"
-  }
-}
-</script>
+<!-- Dependencies (three, cannon-es) are bundled by Vite from node_modules at build
+     time, so there is no import map and nothing to vendor. `npm run build` emits a
+     self-contained /dist that any static host serves correctly. -->
+<link rel="icon" href="data:," />
 </head>
 <body>
   <canvas id="game"></canvas>
@@ -281,6 +275,6 @@
   <div id="pause-hint" class="hidden">ESC — pause</div>
   <div id="fade" class="fade-black"></div>
 
-  <script type="module" src="./src/main.js"></script>
+  <script type="module" src="./src/main.ts"></script>
 </body>
 </html>

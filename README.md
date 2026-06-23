@@ -5,22 +5,38 @@ house and have **five days (= five lives)** to find the keys, tools and codes hi
 across the rooms, clear the three locks on the front door, and escape. She hunts you by
 **sound** and **sight**. A catch costs a day, not your progress.
 
-Built with **Three.js** (rendering), **cannon-es** (rigid-body physics) and the **Web Audio
-API** (fully procedural sound). No external 3D models, textures, or audio files — every
-asset is generated in code. Real physics: you can push furniture to barricade doors, throw
-junk to lure her to a noise, and hide in wardrobes / under beds.
+Written in **TypeScript** and bundled with **Vite**. Built with **Three.js** (rendering),
+**cannon-es** (rigid-body physics) and the **Web Audio API** (fully procedural sound). No
+external 3D models, textures, or audio files — every asset is generated in code. Real
+physics: you can push furniture to barricade doors, throw junk to lure her to a noise, and
+hide in wardrobes / under beds.
 
 ## Run it
 
-Everything is vendored locally (no internet needed at runtime). You just need a local web
-server because the game uses ES modules.
+You need [Node.js](https://nodejs.org) (v18+). Then:
 
-- **Windows:** double-click **`start.bat`** (uses Python or falls back to `npx serve`).
+```bash
+npm install        # one-time: install three, cannon-es, vite, typescript
+npm run dev        # start the dev server at http://localhost:8099
+```
+
+- **Windows:** double-click **`start.bat`** (runs `npm install` if needed, then `npm run dev`).
 - **macOS/Linux:** `./start.sh`
-- **Manual:** from this folder run `python -m http.server 8099` then open
-  <http://localhost:8099>.
 
 Click **ENTER THE HOUSE**, then click the screen to lock the mouse.
+
+## Build & deploy
+
+```bash
+npm run build      # type-safe production bundle into dist/
+npm run typecheck  # tsc --noEmit (no type errors)
+```
+
+`npm run build` emits a fully self-contained **`dist/`** (all dependencies bundled in), so it
+deploys to any static host. **Vercel** and **Netlify** auto-detect the included
+`vercel.json` / `netlify.toml` (build command `npm run build`, output `dist`) — just point
+them at the repo. Because deps are bundled, there is no `node_modules` to serve, which is the
+usual cause of a static deploy getting stuck on the loading screen.
 
 ## Controls
 
@@ -54,20 +70,23 @@ her into a sprint — run for the porch. Item spots reshuffle per seed.
 
 | Module | Responsibility |
 |---|---|
-| `config.js` | Every tunable constant (one place). |
-| `util.js` | Seeded PRNG + math. |
-| `physics.js` | cannon-es world, fixed-timestep loop, hinge doors, mesh interpolation. |
-| `navgrid.js` | A* grid (baked from the same colliders as physics) + dynamic barricade overlay. |
-| `textures.js` / `materials.js` | Procedural `<canvas>` textures + PBR material library. |
-| `furniture.js` | Detailed furniture builders (geometry + colliders + item anchors). |
-| `world.js` | House floor plan, walls/doors, furniture placement, lights, nav bake. |
-| `items.js` | Seeded item placement, interaction, lock chain, carry/throw, hide spots. |
-| `player.js` | Dynamic-capsule FPS controller, stamina, noise, crouch, hiding. |
-| `granny.js` | Granny model + AI (FSM, hearing, multi-ray sight, A* pathing, lunge). |
-| `audio.js` | Procedural Web Audio engine (footsteps, heartbeat, occlusion, music). |
-| `render.js` | Renderer, lighting rig, flashlight, fog, post-processing. |
-| `ui.js` | Menus + HUD. |
-| `main.js` | Bootstrap, game loop, state machine, day/respawn/win flow. |
+| `types.ts` | Shared cross-module type aliases. |
+| `config.ts` | Every tunable constant (one place). |
+| `util.ts` | Seeded PRNG + math. |
+| `physics.ts` | cannon-es world, fixed-timestep loop, hinge doors, mesh interpolation. |
+| `navgrid.ts` | A* grid (baked from the same colliders as physics) + dynamic barricade overlay. |
+| `textures.ts` / `materials.ts` | Procedural `<canvas>` textures + PBR material library. |
+| `furniture.ts` | Detailed furniture builders (geometry + colliders + item anchors). |
+| `world.ts` | House floor plan, walls/doors, furniture placement, lights, nav bake. |
+| `items.ts` | Seeded item placement, interaction, lock chain, carry/throw, hide spots. |
+| `cloth.ts` | Verlet mass-spring cloth simulation for Granny's dress. |
+| `player.ts` | Dynamic-capsule FPS controller, stamina, noise, crouch, hiding. |
+| `granny.ts` | Granny model + AI (FSM, hearing, multi-ray sight, A* pathing, lunge). |
+| `audio.ts` | Procedural Web Audio engine (footsteps, heartbeat, occlusion, music). |
+| `render.ts` | Renderer, lighting rig, flashlight, fog, post-processing. |
+| `ui.ts` | Menus + HUD. |
+| `touch.ts` | Mobile touch controls (joystick, look-drag, action buttons). |
+| `main.ts` | Bootstrap, game loop, state machine, day/respawn/win flow. |
 
 `MASTER_SPEC.md` records the locked design decisions; `_design/` holds the full design +
 adversarial-review notes that produced them.

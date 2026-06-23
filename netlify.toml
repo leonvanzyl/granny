@@ -1,0 +1,10 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# SPA-style fallback isn't needed (single page), but this guarantees the root
+# always serves index.html on any host path.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
